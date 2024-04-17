@@ -1,0 +1,106 @@
+///// EN ESTE PROYECTO CREAMOS UN EJEMPLO DE COMO CREAR UNA LISTA DE USUARIOS Y EXPORTARLOS 
+EN UNA PLANTILLA DE EXCEL. 
+
+ACA LOS PASOS:
+
+LARAVEL EXCEL
+Paquete Opcional de EXCEL ->phpoffice/spreadsheet
+
+https://www.youtube.com/watch?v=9xuWSK6qqEs
+https://docs.laravel-excel.com/3.1/getting-started/installation.html
+
+1- Habilitar esta extension en xampp, config, php.ini 
+extension=gd
+
+2- Crear BD y Configurar BD .env
+
+3- mIGRAR
+
+php artisan migrate
+
+4- PARA ESTE EJEMPLO CREAREMOS ALGUNOS USUARIOS CON FACTORIES->FAKER
+descomentamos la opcion de databaseSeeder de usuarios faker
+php artisan db:seed
+
+5- Creando las rutas web.php
+
+6- crear controlador exportcontroller
+
+7- creando la vista export
+
+Instalando Laravel-Excel
+8- composer require maatwebsite/excel
+
+9- If you want to register it yourself, add the ServiceProvider in config/app.php:
+
+'providers' => [
+    /*
+     * Package Service Providers...
+     */
+    Maatwebsite\Excel\ExcelServiceProvider::class,
+]
+
+10- If you want to add it manually, add the Facade in config/app.php:
+
+'aliases' => [
+    ...
+    'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+]
+
+11- Publicar Configuracion
+
+php artisan vendor:publish --provider="Maatwebsite\Excel\ExcelServiceProvider" --tag=config
+
+
+12- creamos un export y lo vincularemos al modelo User
+
+	php artisan make:export UsersExport --model=User
+
+se creara el metodo export y por defecto traera una linea 
+
+		return User::all();
+
+PERO AHORA DEVOLVEREMOS UNA VISTA EN ESTE METODO, PARA CREAR CORRECTAMENTE LA VISTA DEL ARCHIVO EXCEL, CON SUS COLUMNAS.
+
+Importa estos 2 en UsersExport
+
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
+
+13-  CAMBIAMOS TODO ESTO: ESTO PARA DEVOLVER UNA VISTA.
+
+//con este metodo ya se nos exporta en excel
+class UsersExport implements FromCollection
+{
+    /**
+    * @return \Illuminate\Support\Collection
+    */
+    public function collection()
+    {
+        return User::all();
+    }
+}
+
+
+			** POR ESTO:
+
+class UsersExport implements FromView
+{
+    /**
+    * @return \Illuminate\Support\Collection
+    */
+    public function view(): View
+    {   
+        return view('exportUsers', [
+            'users' => User::all()
+        ]);
+    }
+}
+
+
+14- CREAR LA VISTA exportUsers Y CREAREMOS UNA TABLA DENTRO
+
+*** IMPORTANTE
+15 - ACA SOLO ESTAMOS CREANDO LA VISTA DE LA TABLA DE COMO QUEREMOS LA TABLA CONFIGURADA, NO ESTAMOS CREANDO OTRA VISTA DE PAGINA.
+
+LA OPCION DE EXPORTAR SIGUE ESTANDO EN LA VISTA 'resources\views\export.blade.php' del metodo index.
